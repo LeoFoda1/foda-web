@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Display Flex — Guía Interactiva</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Nunito:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:      #0a0e1a;
+    --card:    #111827;
+    --card2:   #1a2235;
+    --border:  #1f2d45;
+    --purple:  #8b5cf6;
+    --pink:    #f472b6;
+    --cyan:    #22d3ee;
+    --green:   #34d399;
+    --yellow:  #fbbf24;
+    --orange:  #fb923c;
+    --white:   #f1f5f9;
+    --muted:   #64748b;
+    --code:    #0d1117;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    color: var(--white);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    text-align: center;
+    padding: 4rem 2rem 3rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -80px; left: 50%; transform: translateX(-50%);
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(139,92,246,.18) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-tag {
+    display: inline-block;
+    background: rgba(139,92,246,.18);
+    border: 1px solid var(--purple);
+    color: var(--purple);
+    font-family: 'Space Mono', monospace;
+    font-size: .85rem;
+    padding: .35rem 1rem;
+    border-radius: 99px;
+    margin-bottom: 1.4rem;
+    letter-spacing: .05em;
+  }
+  .hero h1 {
+    font-size: clamp(2.5rem, 7vw, 5rem);
+    font-weight: 900;
+    line-height: 1.05;
+  }
+  .hero h1 span { color: var(--cyan); }
+  .hero p {
+    max-width: 560px;
+    margin: 1.2rem auto 0;
+    color: #94a3b8;
+    font-size: 1.1rem;
+    line-height: 1.6;
+  }
+  .scroll-hint {
+    margin-top: 2.5rem;
+    color: var(--muted);
+    font-size: .9rem;
+    animation: bounce 2s infinite;
+  }
+  @keyframes bounce {
+    0%,100%{ transform:translateY(0) } 50%{ transform:translateY(6px) }
+  }
+
+  /* ── LAYOUT ── */
+  .container { max-width: 960px; margin: 0 auto; padding: 0 1.5rem 5rem; }
+
+  /* ── SECTION HEADERS ── */
+  .section-num {
+    display: inline-flex; align-items: center; gap: .7rem;
+    margin-bottom: 1rem;
+  }
+  .section-num .num {
+    width: 2.2rem; height: 2.2rem; border-radius: 50%;
+    display: grid; place-items: center;
+    font-family: 'Space Mono', monospace;
+    font-size: .9rem; font-weight: 700;
+    flex-shrink: 0;
+  }
+  .section-num .label {
+    font-size: .8rem; font-weight: 700;
+    letter-spacing: .12em; text-transform: uppercase;
+  }
+  .section-title {
+    font-size: clamp(1.5rem, 4vw, 2.2rem);
+    font-weight: 900;
+    margin-bottom: .5rem;
+    line-height: 1.15;
+  }
+  .section-desc {
+    color: #94a3b8;
+    line-height: 1.7;
+    max-width: 680px;
+    margin-bottom: 2rem;
+  }
+
+  /* ── CONCEPT CARD ── */
+  .concept-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.8rem;
+    margin-bottom: 1.5rem;
+    position: relative;
+    overflow: hidden;
+    transition: border-color .2s;
+  }
+  .concept-card:hover { border-color: var(--purple); }
+  .concept-card .accent-bar {
+    position: absolute; top: 0; left: 0;
+    width: 4px; height: 100%;
+    border-radius: 16px 0 0 16px;
+  }
+
+  /* ── CODE BLOCK ── */
+  .code-block {
+    background: var(--code);
+    border: 1px solid #1e293b;
+    border-radius: 10px;
+    padding: 1rem 1.2rem;
+    font-family: 'Space Mono', monospace;
+    font-size: .88rem;
+    line-height: 1.9;
+    overflow-x: auto;
+    margin: 1rem 0;
+  }
+  .code-block .selector { color: var(--cyan); }
+  .code-block .prop     { color: var(--pink); }
+  .code-block .val      { color: var(--yellow); }
+  .code-block .comment  { color: var(--muted); }
+  .code-block .punct    { color: #94a3b8; }
+
+  /* ── LIVE DEMO BASE ── */
+  .demo-area {
+    background: #07091280;
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    padding: 1.2rem;
+    margin-top: 1.2rem;
+    transition: border-color .3s;
+  }
+  .demo-area:has(.demo-box:hover) { border-color: var(--purple); }
+  .demo-label {
+    font-family: 'Space Mono', monospace;
+    font-size: .72rem;
+    color: var(--muted);
+    margin-bottom: .8rem;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+  }
+
+  /* ── FLEX CONTAINERS ── */
+  .flex-demo {
+    display: flex;
+    gap: 10px;
+    min-height: 90px;
+    padding: 8px;
+    background: rgba(139,92,246,.07);
+    border-radius: 8px;
+    border: 1px solid rgba(139,92,246,.2);
+    transition: all .4s cubic-bezier(.4,0,.2,1);
+  }
+  .demo-box {
+    background: var(--purple);
+    border-radius: 8px;
+    display: grid; place-items: center;
+    font-weight: 800;
+    font-size: 1rem;
+    color: white;
+    min-width: 52px; min-height: 52px;
+    transition: all .35s cubic-bezier(.4,0,.2,1);
+    cursor: default;
+    user-select: none;
+  }
+  .demo-box:hover { transform: scale(1.08); filter: brightness(1.2); }
+  .demo-box.b1 { background: var(--purple); }
+  .demo-box.b2 { background: var(--pink); }
+  .demo-box.b3 { background: var(--cyan); color: #0a0e1a; }
+  .demo-box.b4 { background: var(--green); color: #0a0e1a; }
+  .demo-box.big { width: 80px; height: 80px; }
+  .demo-box.small { width: 40px; height: 40px; font-size: .8rem; }
+  .demo-box.tall { width: 52px; height: 90px; }
+
+  /* ── BUTTONS ── */
+  .btn-group {
+    display: flex; flex-wrap: wrap; gap: .5rem;
+    margin-top: 1rem;
+  }
+  .btn {
+    font-family: 'Space Mono', monospace;
+    font-size: .78rem;
+    padding: .4rem .9rem;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--card2);
+    color: #94a3b8;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .btn:hover { border-color: var(--purple); color: var(--white); }
+  .btn.active {
+    background: var(--purple);
+    border-color: var(--purple);
+    color: white;
+    font-weight: 700;
+  }
+
+  /* ── BADGE ── */
+  .badge {
+    display: inline-block;
+    font-family: 'Space Mono', monospace;
+    font-size: .78rem;
+    padding: .2rem .7rem;
+    border-radius: 6px;
+    font-weight: 700;
+    margin-right: .4rem;
+  }
+  .badge-purple { background: rgba(139,92,246,.2); color: var(--purple); border: 1px solid var(--purple); }
+  .badge-cyan   { background: rgba(34,211,238,.15); color: var(--cyan);   border: 1px solid var(--cyan);   }
+  .badge-pink   { background: rgba(244,114,182,.15); color: var(--pink);  border: 1px solid var(--pink);   }
+  .badge-green  { background: rgba(52,211,153,.15); color: var(--green);  border: 1px solid var(--green);  }
+  .badge-yellow { background: rgba(251,191,36,.15); color: var(--yellow); border: 1px solid var(--yellow); }
+
+  /* ── DIVIDER ── */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 3rem 0;
+  }
+
+  /* ── PROPERTY VALUE TABLE ── */
+  .val-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: .8rem;
+    margin: 1.2rem 0;
+  }
+  .val-card {
+    background: var(--card2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: .9rem 1rem;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .val-card:hover, .val-card.active {
+    border-color: var(--cyan);
+    background: rgba(34,211,238,.08);
+  }
+  .val-card code {
+    font-family: 'Space Mono', monospace;
+    font-size: .82rem;
+    color: var(--cyan);
+    display: block;
+    margin-bottom: .3rem;
+  }
+  .val-card p { font-size: .82rem; color: #94a3b8; }
+
+  /* ── CURRENT VALUE DISPLAY ── */
+  .current-val {
+    font-family: 'Space Mono', monospace;
+    font-size: .9rem;
+    padding: .5rem 1rem;
+    background: rgba(34,211,238,.1);
+    border: 1px solid var(--cyan);
+    border-radius: 8px;
+    color: var(--cyan);
+    display: inline-block;
+    margin-bottom: 1rem;
+    transition: all .2s;
+  }
+
+  /* ── SUMMARY TABLE ── */
+  .summary {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-top: 1.5rem;
+  }
+  .summary-header {
+    background: rgba(139,92,246,.15);
+    border-bottom: 1px solid var(--border);
+    padding: 1rem 1.5rem;
+    font-weight: 800;
+    font-size: 1.1rem;
+    display: flex; align-items: center; gap: .6rem;
+  }
+  .summary-row {
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    border-bottom: 1px solid var(--border);
+    transition: background .2s;
+  }
+  .summary-row:last-child { border-bottom: none; }
+  .summary-row:hover { background: rgba(255,255,255,.02); }
+  .summary-cell {
+    padding: .9rem 1.5rem;
+    font-size: .92rem;
+    line-height: 1.5;
+  }
+  .summary-cell:first-child {
+    font-family: 'Space Mono', monospace;
+    color: var(--pink);
+    font-size: .82rem;
+    border-right: 1px solid var(--border);
+  }
+  .summary-cell:last-child { color: #94a3b8; }
+
+  /* ── CALLOUT ── */
+  .callout {
+    border-left: 3px solid var(--yellow);
+    background: rgba(251,191,36,.07);
+    border-radius: 0 10px 10px 0;
+    padding: 1rem 1.2rem;
+    margin: 1.2rem 0;
+    font-size: .95rem;
+    line-height: 1.6;
+  }
+  .callout strong { color: var(--yellow); }
+
+  /* ── FINAL CHALLENGE ── */
+  .challenge {
+    background: linear-gradient(135deg, rgba(139,92,246,.15), rgba(34,211,238,.1));
+    border: 1px solid rgba(139,92,246,.4);
+    border-radius: 20px;
+    padding: 2.5rem;
+    text-align: center;
+    margin-top: 3rem;
+  }
+  .challenge h2 { font-size: 2rem; margin-bottom: .8rem; }
+  .challenge p  { color: #94a3b8; max-width: 520px; margin: 0 auto 1.5rem; line-height: 1.6; }
+  .challenge-code {
+    background: var(--code);
+    border-radius: 12px;
+    padding: 1.2rem 1.5rem;
+    font-family: 'Space Mono', monospace;
+    font-size: .85rem;
+    line-height: 2;
+    text-align: left;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+
+  /* animations */
+  .fade-in { animation: fadeIn .5s ease both; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:none} }
+</style>
+</head>
+<body>
+
+<!-- ════════════════ HERO ════════════════ -->
+<section class="hero">
+  <div class="hero-tag">display: flex</div>
+  <h1>Flexbox<br><span>sin misterios</span> 🧩</h1>
+  <p>La propiedad CSS más útil que vas a aprender. Hacé que tus elementos se acomoden solos, donde vos querés.</p>
+  <p class="scroll-hint">↓ Scrolleá y tocá los botones para ver todo en vivo</p>
+</section>
+
+<div class="container">
+
+  <!-- ════════════════ 1. QUÉ ES ════════════════ -->
+  <div class="section-num">
+    <div class="num" style="background:rgba(139,92,246,.2);color:var(--purple);">1</div>
+    <span class="label" style="color:var(--purple);">El problema</span>
+  </div>
+  <h2 class="section-title">¿Para qué sirve Flexbox?</h2>
+  <p class="section-desc">
+    Cuando ponés elementos en HTML, se apilan uno abajo del otro.<br>
+    <strong>Flexbox te permite ponerlos en fila, centrarlos, distribuirlos...</strong> con solo unas líneas de CSS.
+  </p>
+
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.2rem; margin-bottom:2rem;">
+    <div class="concept-card">
+      <div class="accent-bar" style="background:#ef4444;"></div>
+      <p style="font-size:.8rem;color:var(--muted);margin-bottom:.6rem;font-family:'Space Mono',monospace;">SIN flexbox</p>
+      <div style="display:block;">
+        <div style="background:#ef444422;border:1px solid #ef4444;border-radius:6px;padding:.5rem;margin-bottom:.4rem;text-align:center;font-size:.85rem;">📦 Caja 1</div>
+        <div style="background:#ef444422;border:1px solid #ef4444;border-radius:6px;padding:.5rem;margin-bottom:.4rem;text-align:center;font-size:.85rem;">📦 Caja 2</div>
+        <div style="background:#ef444422;border:1px solid #ef4444;border-radius:6px;padding:.5rem;text-align:center;font-size:.85rem;">📦 Caja 3</div>
+      </div>
+      <p style="font-size:.8rem;color:#ef4444;margin-top:.7rem;">Se apilan hacia abajo 😩</p>
+    </div>
+    <div class="concept-card">
+      <div class="accent-bar" style="background:var(--green);"></div>
+      <p style="font-size:.8rem;color:var(--muted);margin-bottom:.6rem;font-family:'Space Mono',monospace;">CON flexbox</p>
+      <div style="display:flex;gap:.4rem;">
+        <div style="flex:1;background:rgba(52,211,153,.15);border:1px solid var(--green);border-radius:6px;padding:.5rem;text-align:center;font-size:.85rem;">📦 1</div>
+        <div style="flex:1;background:rgba(52,211,153,.15);border:1px solid var(--green);border-radius:6px;padding:.5rem;text-align:center;font-size:.85rem;">📦 2</div>
+        <div style="flex:1;background:rgba(52,211,153,.15);border:1px solid var(--green);border-radius:6px;padding:.5rem;text-align:center;font-size:.85rem;">📦 3</div>
+      </div>
+      <p style="font-size:.8rem;color:var(--green);margin-top:.7rem;">¡En fila automáticamente! 🎉</p>
+    </div>
+  </div>
+
+  <div class="concept-card">
+    <div class="accent-bar" style="background:var(--purple);"></div>
+    <p style="font-size:.95rem;line-height:1.7;">
+      Solo necesitás agregar <code style="font-family:'Space Mono',monospace;color:var(--pink);background:rgba(244,114,182,.1);padding:.1rem .4rem;border-radius:4px;">display: flex</code> al <strong>contenedor</strong> (la caja que envuelve a los elementos).
+      ¡Eso ya los pone en fila!
+    </p>
+    <div class="code-block">
+<span class="comment">/* Esto va en tu CSS */</span>
+<br><span class="selector">.contenedor</span> <span class="punct">{</span>
+<br>&nbsp;&nbsp;<span class="prop">display</span><span class="punct">: </span><span class="val">flex</span><span class="punct">;</span>
+<br><span class="punct">}</span>
+    </div>
+    <div class="callout">
+      <strong>💡 Clave:</strong> Flexbox se aplica al <em>padre</em>, no a los hijos. El padre es el que manda dónde van sus hijos.
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ════════════════ 2. FLEX-DIRECTION ════════════════ -->
+  <div class="section-num">
+    <div class="num" style="background:rgba(34,211,238,.15);color:var(--cyan);">2</div>
+    <span class="label" style="color:var(--cyan);">flex-direction</span>
+  </div>
+  <h2 class="section-title">¿En qué dirección?</h2>
+  <p class="section-desc">
+    Con <code style="font-family:'Space Mono',monospace;color:var(--pink);">flex-direction</code> decidís si los elementos van en <strong>fila</strong> o en <strong>columna</strong>.
+  </p>
+
+  <div class="concept-card">
+    <div class="accent-bar" style="background:var(--cyan);"></div>
+    <div class="current-val" id="dir-display">flex-direction: row</div>
+
+    <div class="demo-area">
+      <div class="demo-label">Vista en vivo 👇</div>
+      <div class="flex-demo" id="demo-direction">
+        <div class="demo-box b1">1</div>
+        <div class="demo-box b2">2</div>
+        <div class="demo-box b3">3</div>
+      </div>
+    </div>
+
+    <div class="btn-group">
+      <button class="btn active" onclick="setDir('row')">row</button>
+      <button class="btn" onclick="setDir('row-reverse')">row-reverse</button>
+      <button class="btn" onclick="setDir('column')">column</button>
+      <button class="btn" onclick="setDir('column-reverse')">column-reverse</button>
+    </div>
+
+    <div class="val-grid" style="margin-top:1.2rem;">
+      <div class="val-card">
+        <code>row</code>
+        <p>De izquierda a derecha (default)</p>
+      </div>
+      <div class="val-card">
+        <code>row-reverse</code>
+        <p>De derecha a izquierda</p>
+      </div>
+      <div class="val-card">
+        <code>column</code>
+        <p>De arriba hacia abajo</p>
+      </div>
+      <div class="val-card">
+        <code>column-reverse</code>
+        <p>De abajo hacia arriba</p>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ════════════════ 3. JUSTIFY-CONTENT ════════════════ -->
+  <div class="section-num">
+    <div class="num" style="background:rgba(244,114,182,.15);color:var(--pink);">3</div>
+    <span class="label" style="color:var(--pink);">justify-content</span>
+  </div>
+  <h2 class="section-title">¿Dónde los pongo en la fila?</h2>
+  <p class="section-desc">
+    Controla cómo se distribuyen los elementos <strong>a lo largo del eje principal</strong> (en fila: de izquierda a derecha).
+  </p>
+
+  <div class="concept-card">
+    <div class="accent-bar" style="background:var(--pink);"></div>
+    <div class="current-val" id="jc-display" style="border-color:var(--pink);color:var(--pink);background:rgba(244,114,182,.1);">justify-content: flex-start</div>
+
+    <div class="demo-area">
+      <div class="demo-label">Vista en vivo 👇</div>
+      <div class="flex-demo" id="demo-jc" style="justify-content:flex-start;">
+        <div class="demo-box b1">A</div>
+        <div class="demo-box b2">B</div>
+        <div class="demo-box b3">C</div>
+      </div>
+    </div>
+
+    <div class="btn-group">
+      <button class="btn active" onclick="setJC('flex-start')">flex-start</button>
+      <button class="btn" onclick="setJC('flex-end')">flex-end</button>
+      <button class="btn" onclick="setJC('center')">center</button>
+      <button class="btn" onclick="setJC('space-between')">space-between</button>
+      <button class="btn" onclick="setJC('space-around')">space-around</button>
+      <button class="btn" onclick="setJC('space-evenly')">space-evenly</button>
+    </div>
+
+    <div class="val-grid" style="margin-top:1.2rem;">
+      <div class="val-card">
+        <code>flex-start</code>
+        <p>Pegados al inicio (izquierda)</p>
+      </div>
+      <div class="val-card">
+        <code>flex-end</code>
+        <p>Pegados al final (derecha)</p>
+      </div>
+      <div class="val-card">
+        <code>center</code>
+        <p>En el centro ✨</p>
+      </div>
+      <div class="val-card">
+        <code>space-between</code>
+        <p>Separados, sin margen en los extremos</p>
+      </div>
+      <div class="val-card">
+        <code>space-around</code>
+        <p>Espacio alrededor de cada uno</p>
+      </div>
+      <div class="val-card">
+        <code>space-evenly</code>
+        <p>Espacio igual entre todos 👌</p>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ════════════════ 4. ALIGN-ITEMS ════════════════ -->
+  <div class="section-num">
+    <div class="num" style="background:rgba(52,211,153,.15);color:var(--green);">4</div>
+    <span class="label" style="color:var(--green);">align-items</span>
+  </div>
+  <h2 class="section-title">¿Cómo se alinean en altura?</h2>
+  <p class="section-desc">
+    Mientras <code style="font-family:'Space Mono',monospace;color:var(--pink);">justify-content</code> controla el eje horizontal,
+    <code style="font-family:'Space Mono',monospace;color:var(--green);">align-items</code> controla cómo quedan <strong>en la vertical</strong>.
+  </p>
+
+  <div class="concept-card">
+    <div class="accent-bar" style="background:var(--green);"></div>
+    <div class="current-val" id="ai-display" style="border-color:var(--green);color:var(--green);background:rgba(52,211,153,.1);">align-items: stretch</div>
+
+    <div class="demo-area">
+      <div class="demo-label">Vista en vivo (las cajas tienen distintas alturas) 👇</div>
+      <div class="flex-demo" id="demo-ai" style="align-items:stretch; min-height:130px;">
+        <div class="demo-box b1 big">A</div>
+        <div class="demo-box b2 small">B</div>
+        <div class="demo-box b3 tall">C</div>
+        <div class="demo-box b4 small">D</div>
+      </div>
+    </div>
+
+    <div class="btn-group">
+      <button class="btn active" onclick="setAI('stretch')">stretch</button>
+      <button class="btn" onclick="setAI('flex-start')">flex-start</button>
+      <button class="btn" onclick="setAI('flex-end')">flex-end</button>
+      <button class="btn" onclick="setAI('center')">center</button>
+      <button class="btn" onclick="setAI('baseline')">baseline</button>
+    </div>
+
+    <div class="val-grid" style="margin-top:1.2rem;">
+      <div class="val-card">
+        <code>stretch</code>
+        <p>Se estiran para llenar el alto (default)</p>
+      </div>
+      <div class="val-card">
+        <code>flex-start</code>
+        <p>Alineados arriba</p>
+      </div>
+      <div class="val-card">
+        <code>flex-end</code>
+        <p>Alineados abajo</p>
+      </div>
+      <div class="val-card">
+        <code>center</code>
+        <p>Centrados verticalmente 🎯</p>
+      </div>
+      <div class="val-card">
+        <code>baseline</code>
+        <p>Alineados por el texto</p>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ════════════════ 5. GAP ════════════════ -->
+  <div class="section-num">
+    <div class="num" style="background:rgba(251,191,36,.15);color:var(--yellow);">5</div>
+    <span class="label" style="color:var(--yellow);">gap</span>
+  </div>
+  <h2 class="section-title">Espacio entre elementos</h2>
+  <p class="section-desc">
+    <code style="font-family:'Space Mono',monospace;color:var(--yellow);">gap</code> es la forma más fácil de poner espacio entre los elementos del flex.
+    ¡Sin usar margin en cada uno!
+  </p>
+
+  <div class="concept-card">
+    <div class="accent-bar" style="background:var(--yellow);"></div>
+    <div class="current-val" id="gap-display" style="border-color:var(--yellow);color:var(--yellow);background:rgba(251,191,36,.1);">gap: 8px</div>
+
+    <div class="demo-area">
+      <div class="demo-label">Mové el slider para ver el gap cambiar 👇</div>
+      <div class="flex-demo" id="demo-gap" style="justify-content:center; align-items:center;">
+        <div class="demo-box b1">🎮</div>
+        <div class="demo-box b2">🎵</div>
+        <div class="demo-box b3">⚽</div>
+        <div class="demo-box b4">🌟</div>
+      </div>
+      <input type="range" min="0" max="40" value="8" oninput="setGap(this.value)"
+        style="width:100%;margin-top:1rem;accent-color:var(--yellow);">
+    </div>
+
+    <div class="code-block" id="gap-code">
+<span class="selector">.contenedor</span> <span class="punct">{</span>
+<br>&nbsp;&nbsp;<span class="prop">display</span><span class="punct">: </span><span class="val">flex</span><span class="punct">;</span>
+<br>&nbsp;&nbsp;<span class="prop">gap</span><span class="punct">: </span><span class="val" id="gap-val">8px</span><span class="punct">;</span>
+<br><span class="punct">}</span>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ════════════════ 6. FLEX-WRAP ════════════════ -->
+  <div class="section-num">
+    <div class="num" style="background:rgba(251,146,60,.15);color:var(--orange);">6</div>
+    <span class="label" style="color:var(--orange);">flex-wrap</span>
+  </div>
+  <h2 class="section-title">¿Qué pasa si no entran?</h2>
+  <p class="section-desc">
+    Por defecto, todos los elementos se meten en una sola fila aunque no entren.
+    Con <code style="font-family:'Space Mono',monospace;color:var(--orange);">flex-wrap: wrap</code> dejan que bajen a la siguiente línea.
+  </p>
+
+  <div class="concept-card">
+    <div class="accent-bar" style="background:var(--orange);"></div>
+    <div class="current-val" id="wrap-display" style="border-color:var(--orange);color:var(--orange);background:rgba(251,146,60,.1);">flex-wrap: nowrap</div>
+
+    <div class="demo-area">
+      <div class="demo-label">Vista en vivo con muchos elementos 👇</div>
+      <div class="flex-demo" id="demo-wrap" style="flex-wrap:nowrap; gap:8px; overflow:hidden;">
+        <div class="demo-box b1" style="min-width:65px;">🎮</div>
+        <div class="demo-box b2" style="min-width:65px;">🎵</div>
+        <div class="demo-box b3" style="min-width:65px;">⚽</div>
+        <div class="demo-box b4" style="min-width:65px;">🌟</div>
+        <div class="demo-box b1" style="min-width:65px;">🍕</div>
+        <div class="demo-box b2" style="min-width:65px;">🐱</div>
+        <div class="demo-box b3" style="min-width:65px;">🚀</div>
+      </div>
+    </div>
+
+    <div class="btn-group">
+      <button class="btn active" onclick="setWrap('nowrap')">nowrap</button>
+      <button class="btn" onclick="setWrap('wrap')">wrap</button>
+    </div>
+
+    <div class="callout">
+      <strong>💡 Tip:</strong> <code style="font-family:'Space Mono',monospace;">flex-wrap: wrap</code> es muy útil cuando hacés galerías de fotos o tarjetas que tienen que adaptarse al tamaño de la pantalla.
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ════════════════ RESUMEN ════════════════ -->
+  <div class="section-num">
+    <div class="num" style="background:rgba(139,92,246,.2);color:var(--purple);">📋</div>
+    <span class="label" style="color:var(--purple);">Resumen</span>
+  </div>
+  <h2 class="section-title">Todo en un lugar</h2>
+  <p class="section-desc">Las propiedades que aprendiste hoy:</p>
+
+  <div class="summary">
+    <div class="summary-header">
+      🧩 Propiedades de Flexbox
+    </div>
+    <div class="summary-row">
+      <div class="summary-cell">display: flex</div>
+      <div class="summary-cell">Activa el flexbox en el contenedor. <strong>El punto de partida.</strong></div>
+    </div>
+    <div class="summary-row">
+      <div class="summary-cell">flex-direction</div>
+      <div class="summary-cell"><span class="badge badge-cyan">row</span> <span class="badge badge-pink">column</span> — Define si los elementos van en fila o columna.</div>
+    </div>
+    <div class="summary-row">
+      <div class="summary-cell">justify-content</div>
+      <div class="summary-cell"><span class="badge badge-green">center</span> <span class="badge badge-yellow">space-between</span> — Distribuye los elementos en el eje principal.</div>
+    </div>
+    <div class="summary-row">
+      <div class="summary-cell">align-items</div>
+      <div class="summary-cell"><span class="badge badge-purple">center</span> <span class="badge badge-pink">flex-start</span> — Alinea los elementos en el eje secundario (altura).</div>
+    </div>
+    <div class="summary-row">
+      <div class="summary-cell">gap</div>
+      <div class="summary-cell">Espacio entre elementos. Ejemplo: <code style="font-family:'Space Mono',monospace;color:var(--yellow);">gap: 16px</code></div>
+    </div>
+    <div class="summary-row">
+      <div class="summary-cell">flex-wrap</div>
+      <div class="summary-cell"><span class="badge badge-cyan">wrap</span> — Permite que los elementos bajen a la línea siguiente si no entran.</div>
+    </div>
+  </div>
+
+  <!-- ════════════════ DESAFÍO FINAL ════════════════ -->
+  <div class="challenge">
+    <div style="font-size:2.5rem;margin-bottom:.5rem;">🚀</div>
+    <h2>Desafío final</h2>
+    <p>Copiá este código en tu <code style="font-family:'Space Mono',monospace;color:var(--cyan);">index.html</code> y modificá las propiedades para que quede centrado y con espacio entre las tarjetas.</p>
+    <div class="challenge-code">
+<span style="color:var(--muted);">/* En tu CSS */</span><br>
+<span style="color:var(--cyan);">.tarjetas</span> <span style="color:#94a3b8;">{</span><br>
+&nbsp;&nbsp;<span style="color:var(--pink);">display</span><span style="color:#94a3b8;">: </span><span style="color:var(--yellow);">flex</span><span style="color:#94a3b8);">;</span><br>
+&nbsp;&nbsp;<span style="color:var(--pink);">justify-content</span><span style="color:#94a3b8;">: </span><span style="color:var(--yellow);">___</span><span style="color:#94a3b8;">; </span><span style="color:var(--muted);">/* completá */</span><br>
+&nbsp;&nbsp;<span style="color:var(--pink);">align-items</span><span style="color:#94a3b8;">: </span><span style="color:var(--yellow);">___</span><span style="color:#94a3b8;">; </span><span style="color:var(--muted);">/* completá */</span><br>
+&nbsp;&nbsp;<span style="color:var(--pink);">gap</span><span style="color:#94a3b8;">: </span><span style="color:var(--yellow);">___</span><span style="color:#94a3b8;">;</span><br>
+<span style="color:#94a3b8;">}</span>
+    </div>
+    <p style="margin-top:1.5rem;font-size:.9rem;">⭐ <strong>Extra:</strong> Agregá <code style="font-family:'Space Mono',monospace;color:var(--orange);">flex-wrap: wrap</code> y hacé que sea una grilla de tarjetas.</p>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+  // ── flex-direction ──
+  function setDir(val) {
+    document.getElementById('demo-direction').style.flexDirection = val;
+    document.getElementById('dir-display').textContent = 'flex-direction: ' + val;
+    highlightBtn(event.target);
+  }
+
+  // ── justify-content ──
+  function setJC(val) {
+    document.getElementById('demo-jc').style.justifyContent = val;
+    document.getElementById('jc-display').textContent = 'justify-content: ' + val;
+    highlightBtn(event.target);
+  }
+
+  // ── align-items ──
+  function setAI(val) {
+    document.getElementById('demo-ai').style.alignItems = val;
+    document.getElementById('ai-display').textContent = 'align-items: ' + val;
+    highlightBtn(event.target);
+  }
+
+  // ── gap ──
+  function setGap(val) {
+    document.getElementById('demo-gap').style.gap = val + 'px';
+    document.getElementById('gap-display').textContent = 'gap: ' + val + 'px';
+    document.getElementById('gap-val').textContent = val + 'px';
+  }
+
+  // ── flex-wrap ──
+  function setWrap(val) {
+    document.getElementById('demo-wrap').style.flexWrap = val;
+    document.getElementById('wrap-display').textContent = 'flex-wrap: ' + val;
+    highlightBtn(event.target);
+  }
+
+  // highlight helper
+  function highlightBtn(btn) {
+    const group = btn.parentElement;
+    group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+
+  // fade-in on scroll
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('fade-in');
+        observer.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.concept-card, .summary, .challenge').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
